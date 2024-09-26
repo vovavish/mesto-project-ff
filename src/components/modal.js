@@ -6,6 +6,13 @@ function closePopupHandlerButton(evt) {
   }
 }
 
+function closePopupHandlerOverlay(evt) {
+  const targetClassList = evt.target.classList;
+  if (targetClassList.contains('popup') || targetClassList.contains('popup__close')) {
+    closePopup(currentOpenedPopup);
+  }
+}
+
 function openPopup(popupElement) {
   currentOpenedPopup = popupElement;
   popupElement.classList.toggle("popup_is-opened");
@@ -18,4 +25,4 @@ function closePopup(popupElement) {
   document.removeEventListener("keydown", closePopupHandlerButton);
 }
 
-export { openPopup, closePopup, currentOpenedPopup };
+export { openPopup, closePopup, closePopupHandlerOverlay };
