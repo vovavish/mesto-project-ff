@@ -113,10 +113,17 @@ function handleFormEditProfileSubmit(evt) {
 
   setSubmitButtonStateSave(formEditProfileElement);
 
-  updateUserData({ name: nameInput.value, about: jobInput.value }).then(() => {
-    closePopup(popupEdit);
-    setSubmitButtonStateDefault(formEditProfileElement);
-  });
+  updateUserData({ name: nameInput.value, about: jobInput.value }).then((res) => {
+    if (res.ok) {
+      closePopup(popupEdit);
+      setSubmitButtonStateDefault(formEditProfileElement);
+    } else {
+      return Promise.reject(`Error: ${res.status}`);
+    }
+  })
+  .catch((err) => {
+    console.log(err);
+  });;
 }
 
 function handleFormAddNewPlaceSubmit(evt) {
@@ -130,7 +137,13 @@ function handleFormAddNewPlaceSubmit(evt) {
   setSubmitButtonStateSave(formAddNewPlaceElement);
 
   addCardToServer(cardData)
-    .then((res) => res.json())
+    .then((res) => {
+      if (res.ok) {
+        return res.json()
+      }
+
+      return Promise.reject(`Error: ${res.status}`);
+    })
     .then((cardData) => {
       placesList.prepend(
         createCard({
@@ -147,38 +160,11 @@ function handleFormAddNewPlaceSubmit(evt) {
       setSubmitButtonStateDefault(formAddNewPlaceElement);
       clearValidation(formAddNewPlaceElement, validationConfig);
       formAddNewPlaceElement.reset();
-    });
+    })
+    .catch((err) => {
+      console.log(err);
+    });;
 }
-
-formEditProfileElement.addEventListener("submit", handleFormEditProfileSubmit);
-
-formAddNewPlaceElement.addEventListener("submit", handleFormAddNewPlaceSubmit);
-
-formDeleteCard.addEventListener("submit", (evt) => {
-  evt.preventDefault();
-  closePopup(popupDeleteCard);
-  deleteCardCallback(currentCardElementToDelete, currentCardIdToDelete);
-});
-
-formEditAvatar.addEventListener("submit", (evt) => {
-  evt.preventDefault();
-
-  setSubmitButtonStateSave(formEditAvatar);
-
-  const newAvatarLink = formEditAvatar.elements.link.value;
-
-  updateAvatarToServer(newAvatarLink).then(() => {
-    profileImage.style.backgroundImage = `url(${newAvatarLink})`;
-    closePopup(popupEditAvatar);
-  });
-});
-
-profileImage.addEventListener("click", () => {
-  clearValidation(formEditAvatar, validationConfig);
-  avatarLinkInput.value = "";
-  setSubmitButtonStateDefault(formEditAvatar);
-  openPopup(popupEditAvatar);
-});
 
 function setSubmitButtonStateSave(formElement) {
   formElement.querySelector(".popup__button").textContent = "Сохранение...";
@@ -193,6 +179,45 @@ function updateLocalUserData(userData) {
   profileDescriptionElement.textContent = userData.about;
   profileImage.style.backgroundImage = `url(${userData.avatar})`;
 }
+
+formEditProfileElement.addEventListener("submit", handleFormEditProfileSubmit);
+
+formAddNewPlaceElement.addEventListener("submit", handleFormAddNewPlaceSubmit);
+
+formDeleteCard.addEventListener("submit", (evt) => {
+  evt.preventDefault();
+  deleteCardCallback(currentCardElementToDelete, currentCardIdToDelete)
+    .then(() => {
+      closePopup(popupDeleteCard);
+    });
+});
+
+formEditAvatar.addEventListener("submit", (evt) => {
+  evt.preventDefault();
+
+  setSubmitButtonStateSave(formEditAvatar);
+
+  const newAvatarLink = formEditAvatar.elements.link.value;
+
+  updateAvatarToServer(newAvatarLink).then((res) => {
+    if (res.ok) {
+      profileImage.style.backgroundImage = `url(${newAvatarLink})`;
+      closePopup(popupEditAvatar);
+    } else {
+      return Promise.reject(`Error: ${res.status}`);
+    }
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+});
+
+profileImage.addEventListener("click", () => {
+  clearValidation(formEditAvatar, validationConfig);
+  avatarLinkInput.value = "";
+  setSubmitButtonStateDefault(formEditAvatar);
+  openPopup(popupEditAvatar);
+});
 
 Promise.all([getUserData(), getInitialCards()]).then((results) => {
   const userData = results[0];

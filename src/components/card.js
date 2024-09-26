@@ -65,7 +65,7 @@ function createCard({
 }
 
 const deleteCardCallback = (cardElement, cardId) => {
-  deleteCardFromServer(cardId).then((res) => {
+  return deleteCardFromServer(cardId).then((res) => {
     if (res.ok) {
       cardElement.remove();
     }
@@ -76,20 +76,38 @@ const likeCardCallback = (cardElement, cardId) => {
   const cardLikeButton = cardElement.querySelector(".card__like-button");
   if (cardLikeButton.classList.contains("card__like-button_is-active")) {
     deleteLikeFromServer(cardId)
-      .then((res) => res.json())
+    .then((res) => {
+      if (res.ok) {
+        return res.json()
+      }
+
+      return Promise.reject(`Error: ${res.status}`);
+    })
       .then((cardData) => {
         const likesTotalElement =
           cardElement.querySelector(".card__likes-total");
         likesTotalElement.textContent = cardData.likes.length;
+      })
+      .catch((err) => {
+        console.log(err);
       });
   } else {
     setLikeToServer(cardId)
-      .then((res) => res.json())
+    .then((res) => {
+      if (res.ok) {
+        return res.json()
+      }
+
+      return Promise.reject(`Error: ${res.status}`);
+    })
       .then((cardData) => {
         const likesTotalElement =
           cardElement.querySelector(".card__likes-total");
         likesTotalElement.textContent = cardData.likes.length;
-      });
+      })
+      .catch((err) => {
+        console.log(err);
+      });;
   }
 
   cardLikeButton.classList.toggle("card__like-button_is-active");

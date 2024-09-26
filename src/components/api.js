@@ -12,13 +12,25 @@ const config = {
 export function getUserData() {
   return fetch(`${config.baseUrl}/users/me`, {
     headers: config.headersAuthorization,
-  }).then((res) => res.json());
+  }).then((res) => {
+    if (res.ok) {
+      return res.json();
+    }
+
+    return Promise.reject(`Error: ${res.status}`);
+  });
 }
 
 export function getInitialCards() {
   return fetch(`${config.baseUrl}/cards`, {
     headers: config.headersAuthorization,
-  }).then((res) => res.json());
+  }).then((res) => {
+    if (res.ok) {
+      return res.json();
+    }
+
+    return Promise.reject(`Error: ${res.status}`);
+  });
 }
 
 export function updateAvatarToServer(newAvatarLink) {
