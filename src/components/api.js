@@ -1,3 +1,5 @@
+import { request, checkResponse } from "../utils/requestUtil";
+
 const config = {
   baseUrl: "https://nomoreparties.co/v1/wff-cohort-23",
   headersAuthorization: {
@@ -10,26 +12,14 @@ const config = {
 };
 
 export function getUserData() {
-  return fetch(`${config.baseUrl}/users/me`, {
+  return request(`${config.baseUrl}/users/me`, {
     headers: config.headersAuthorization,
-  }).then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-
-    return Promise.reject(`Error: ${res.status}`);
   });
 }
 
 export function getInitialCards() {
-  return fetch(`${config.baseUrl}/cards`, {
+  return request(`${config.baseUrl}/cards`, {
     headers: config.headersAuthorization,
-  }).then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-
-    return Promise.reject(`Error: ${res.status}`);
   });
 }
 
@@ -40,7 +30,7 @@ export function updateAvatarToServer(newAvatarLink) {
     body: JSON.stringify({
       avatar: newAvatarLink,
     }),
-  });
+  }).then(checkResponse);
 }
 
 export function updateUserData(userData) {
@@ -51,11 +41,11 @@ export function updateUserData(userData) {
       name: userData.name,
       about: userData.about,
     }),
-  });
+  }).then(checkResponse);
 }
 
 export function addCardToServer(cardData) {
-  return fetch(`${config.baseUrl}/cards`, {
+  return request(`${config.baseUrl}/cards`, {
     method: "POST",
     headers: config.headersJson,
     body: JSON.stringify({
@@ -66,14 +56,14 @@ export function addCardToServer(cardData) {
 }
 
 export function setLikeToServer(cardId) {
-  return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
+  return request(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: "PUT",
     headers: config.headersAuthorization,
   });
 }
 
 export function deleteLikeFromServer(cardId) {
-  return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
+  return request(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: "DELETE",
     headers: config.headersAuthorization,
   });
@@ -83,5 +73,5 @@ export function deleteCardFromServer(cardId) {
   return fetch(`${config.baseUrl}/cards/${cardId}`, {
     method: "DELETE",
     headers: config.headersAuthorization,
-  });
+  }).then(checkResponse);
 }

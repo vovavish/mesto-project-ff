@@ -4,6 +4,8 @@ import {
   deleteCardFromServer,
 } from "./api";
 
+import { checkResponseJSON } from "../utils/requestUtil";
+
 const cardTemplate = document
   .querySelector("#card-template")
   .content.querySelector(".card");
@@ -14,8 +16,8 @@ let currentCardIdToDelete = undefined;
 function createCard({
   card,
   likeCallback,
-  popupOnClickCallback,
-  popupDeleteCardCallback,
+  onClickPopupCallback,
+  deleteCardPopupCallback,
   currentUserId,
 }) {
   const cardElement = cardTemplate.cloneNode(true);
@@ -25,7 +27,7 @@ function createCard({
   cardImage.alt = card.name;
 
   cardImage.addEventListener("click", (evt) =>
-    popupOnClickCallback(evt, cardImage)
+    onClickPopupCallback(evt, cardImage)
   );
 
   cardElement.querySelector(".card__title").textContent = card.name;
@@ -40,7 +42,7 @@ function createCard({
     cardDeleteButtonElement.addEventListener("click", () => {
       currentCardElementToDelete = cardElement;
       currentCardIdToDelete = card._id;
-      popupDeleteCardCallback();
+      deleteCardPopupCallback();
     });
   }
 
@@ -65,52 +67,40 @@ function createCard({
 }
 
 const deleteCardCallback = (cardElement, cardId) => {
-  return deleteCardFromServer(cardId).then((res) => {
-    if (res.ok) {
+  return deleteCardFromServer(cardId)
+    .then((res) => {
       cardElement.remove();
-    }
-  });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 const likeCardCallback = (cardElement, cardId) => {
   const cardLikeButton = cardElement.querySelector(".card__like-button");
   if (cardLikeButton.classList.contains("card__like-button_is-active")) {
     deleteLikeFromServer(cardId)
-    .then((res) => {
-      if (res.ok) {
-        return res.json()
-      }
-
-      return Promise.reject(`Error: ${res.status}`);
-    })
       .then((cardData) => {
         const likesTotalElement =
           cardElement.querySelector(".card__likes-total");
         likesTotalElement.textContent = cardData.likes.length;
+        cardLikeButton.classList.toggle("card__like-button_is-active");
       })
       .catch((err) => {
         console.log(err);
       });
   } else {
     setLikeToServer(cardId)
-    .then((res) => {
-      if (res.ok) {
-        return res.json()
-      }
-
-      return Promise.reject(`Error: ${res.status}`);
-    })
       .then((cardData) => {
         const likesTotalElement =
           cardElement.querySelector(".card__likes-total");
         likesTotalElement.textContent = cardData.likes.length;
+        cardLikeButton.classList.toggle("card__like-button_is-active");
       })
       .catch((err) => {
         console.log(err);
-      });;
+      });
   }
-
-  cardLikeButton.classList.toggle("card__like-button_is-active");
 };
 
 export {

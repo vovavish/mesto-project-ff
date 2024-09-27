@@ -28,6 +28,7 @@ function hideInputError(formElement, inputElement, validationConfig) {
       validationConfig.submitButtonSelector
     );
     submitFormButton.classList.remove(validationConfig.inactiveButtonClass);
+    submitFormButton.removeAttribute('disabled');
   }
 }
 
@@ -36,6 +37,7 @@ function turnOffSubmitButton(formElement, validationConfig) {
     validationConfig.submitButtonSelector
   );
   submitFormButton.classList.add(validationConfig.inactiveButtonClass);
+  submitFormButton.setAttribute('disabled', true);
 }
 
 function checkInputValidity(formElement, inputElement, validationConfig) {

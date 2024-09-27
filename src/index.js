@@ -69,7 +69,7 @@ const validationConfig = {
 
 enableValidation(validationConfig);
 
-function popupOnClickCallback(evt, cardImage) {
+function onClickPopupCallback(evt, cardImage) {
   popupImage.src = cardImage.src;
   popupImage.alt = cardImage.alt;
   popupImageCaption.textContent = cardImage.alt;
@@ -79,7 +79,7 @@ function popupOnClickCallback(evt, cardImage) {
   openPopup(popupTypeImage);
 }
 
-function popupDeleteCardCallback(evt) {
+function deleteCardPopupCallback(evt) {
   openPopup(popupDeleteCard);
 }
 
@@ -108,22 +108,20 @@ popupElements.forEach((popupElement) => {
 function handleFormEditProfileSubmit(evt) {
   evt.preventDefault();
 
-  profileTitleElement.textContent = nameInput.value;
-  profileDescriptionElement.textContent = jobInput.value;
-
   setSubmitButtonStateSave(formEditProfileElement);
 
-  updateUserData({ name: nameInput.value, about: jobInput.value }).then((res) => {
-    if (res.ok) {
+  updateUserData({ name: nameInput.value, about: jobInput.value })
+    .then((res) => {
       closePopup(popupEdit);
+      profileTitleElement.textContent = nameInput.value;
+      profileDescriptionElement.textContent = jobInput.value;
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+    .finally(() => {
       setSubmitButtonStateDefault(formEditProfileElement);
-    } else {
-      return Promise.reject(`Error: ${res.status}`);
-    }
-  })
-  .catch((err) => {
-    console.log(err);
-  });;
+    });
 }
 
 function handleFormAddNewPlaceSubmit(evt) {
@@ -137,33 +135,27 @@ function handleFormAddNewPlaceSubmit(evt) {
   setSubmitButtonStateSave(formAddNewPlaceElement);
 
   addCardToServer(cardData)
-    .then((res) => {
-      if (res.ok) {
-        return res.json()
-      }
-
-      return Promise.reject(`Error: ${res.status}`);
-    })
     .then((cardData) => {
       placesList.prepend(
         createCard({
           card: cardData,
-          deleteCallback: deleteCardCallback,
           likeCallback: likeCardCallback,
-          popupOnClickCallback: popupOnClickCallback,
-          popupDeleteCardCallback: popupDeleteCardCallback,
+          onClickPopupCallback: onClickPopupCallback,
+          deleteCardPopupCallback: deleteCardPopupCallback,
           currentUserId: cardData.owner._id,
         })
       );
 
       closePopup(popupAdd);
-      setSubmitButtonStateDefault(formAddNewPlaceElement);
       clearValidation(formAddNewPlaceElement, validationConfig);
       formAddNewPlaceElement.reset();
     })
     .catch((err) => {
       console.log(err);
-    });;
+    })
+    .finally(() => {
+      setSubmitButtonStateDefault(formAddNewPlaceElement);
+    });
 }
 
 function setSubmitButtonStateSave(formElement) {
@@ -186,10 +178,11 @@ formAddNewPlaceElement.addEventListener("submit", handleFormAddNewPlaceSubmit);
 
 formDeleteCard.addEventListener("submit", (evt) => {
   evt.preventDefault();
-  deleteCardCallback(currentCardElementToDelete, currentCardIdToDelete)
-    .then(() => {
+  deleteCardCallback(currentCardElementToDelete, currentCardIdToDelete).then(
+    () => {
       closePopup(popupDeleteCard);
-    });
+    }
+  );
 });
 
 formEditAvatar.addEventListener("submit", (evt) => {
@@ -199,17 +192,14 @@ formEditAvatar.addEventListener("submit", (evt) => {
 
   const newAvatarLink = formEditAvatar.elements.link.value;
 
-  updateAvatarToServer(newAvatarLink).then((res) => {
-    if (res.ok) {
+  updateAvatarToServer(newAvatarLink)
+    .then((res) => {
       profileImage.style.backgroundImage = `url(${newAvatarLink})`;
       closePopup(popupEditAvatar);
-    } else {
-      return Promise.reject(`Error: ${res.status}`);
-    }
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 });
 
 profileImage.addEventListener("click", () => {
@@ -229,11 +219,10 @@ Promise.all([getUserData(), getInitialCards()]).then((results) => {
     placesList.append(
       createCard({
         card: card,
-        deleteCallback: deleteCardCallback,
         likeCallback: likeCardCallback,
-        popupOnClickCallback: popupOnClickCallback,
+        onClickPopupCallback: onClickPopupCallback,
         currentUserId: userData._id,
-        popupDeleteCardCallback: popupDeleteCardCallback,
+        deleteCardPopupCallback: deleteCardPopupCallback,
       })
     )
   );
