@@ -50,7 +50,6 @@ const placeLinkInput = formAddNewPlaceElement.elements.link;
 const formDeleteCard = document.forms["delete-card"];
 
 const formEditAvatar = document.forms["new-avatar"];
-const avatarLinkInput = formEditAvatar.elements.link;
 
 const profileTitleElement = document.querySelector(".profile__title");
 const profileDescriptionElement = document.querySelector(
@@ -74,8 +73,6 @@ function onClickPopupCallback(evt, cardImage) {
   popupImage.alt = cardImage.alt;
   popupImageCaption.textContent = cardImage.alt;
 
-  setSubmitButtonStateDefault(formAddNewPlaceElement);
-
   openPopup(popupTypeImage);
 }
 
@@ -93,10 +90,8 @@ profileEditButton.addEventListener("click", () => {
 });
 
 profileAddButton.addEventListener("click", () => {
-  setSubmitButtonStateDefault(formEditProfileElement);
   clearValidation(formAddNewPlaceElement, validationConfig);
-  placeNameInput.value = "";
-  placeLinkInput.value = "";
+  formAddNewPlaceElement.reset();
   openPopup(popupAdd);
 });
 
@@ -199,13 +194,15 @@ formEditAvatar.addEventListener("submit", (evt) => {
     })
     .catch((err) => {
       console.log(err);
+    })
+    .finally(() => {
+      setSubmitButtonStateDefault(formEditAvatar);
     });
 });
 
 profileImage.addEventListener("click", () => {
   clearValidation(formEditAvatar, validationConfig);
-  avatarLinkInput.value = "";
-  setSubmitButtonStateDefault(formEditAvatar);
+  formEditAvatar.reset();
   openPopup(popupEditAvatar);
 });
 
